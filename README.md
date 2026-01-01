@@ -8,7 +8,7 @@ You will find the followinbg files in order
   
 **03_biopsychosocial2.ipynb**
   
-**04_Mathematics-1.ipynb**
+**[04_Mathematics-1.ipynb](04_Mathematics-1.ipynb)**
   
 **05A_Mathematics-2.ipynb**
   
