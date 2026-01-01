@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sphere + Equatorial Plane Interaction</title>
+  <style>
+    body { margin: 0; }
+    #toggleMode { position: absolute; top: 10px; left: 10px; z-index: 100; }
+  </style>
+</head>
+<body>
+  <button id="toggleMode">Switch to Point Move Mode</button>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+  <script>
+    // Scene setup (unchanged)
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Sphere (unchanged)
+    const sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
+    const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x1E90FF, wireframe: true });
+    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    scene.add(sphere);
+
+    // Complex plane: NOW VERTICAL (yz-plane) and intersecting equator (y=0)
+    const planeGeometry = new THREE.PlaneGeometry(10, 10);
+    const planeMaterial = new THREE.MeshBasicMaterial({ 
+      color: 0xAAAAAA, 
+      side: THREE.DoubleSide, 
+      transparent: true, 
+      opacity: 0.4 
+    });
+    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    plane.rotation.x = 0; // Now aligned with yz-plane (vertical)
+    plane.position.x = 0; // Ensures origin (0,0,0) intersects the sphere's poles
+    scene.add(plane);
+
+    // Point and projection (unchanged)
+    const pointGeometry = new THREE.SphereGeometry(0.05, 16, 16);
+    const pointMaterial = new THREE.MeshBasicMaterial({ color: 0xFF0000 });
+    const point = new THREE.Mesh(pointGeometry, pointMaterial);
+    scene.add(point);
+
+    const projMaterial = new THREE.MeshBasicMaterial({ color: 0x9932CC });
+    const projection = new THREE.Mesh(pointGeometry, projMaterial);
+    scene.add(projection);
+
+    // Initial point position (unchanged)
+    updatePointPosition(Math.PI/4, Math.PI/3);
+
+    // Controls (unchanged)
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    camera.position.set(2, 2, 2);
+    controls.update();
+
+    // Mode toggle (unchanged)
+    let isMoveMode = false;
+    const toggleButton = document.getElementById('toggleMode');
+    toggleButton.addEventListener('click', () => {
+      isMoveMode = !isMoveMode;
+      toggleButton.textContent = isMoveMode 
+        ? "Switch to Global Rotate Mode" 
+        : "Switch to Point Move Mode";
+      controls.enabled = !isMoveMode;
+    });
+
+    // Point movement logic (unchanged)
+    function updatePointPosition(theta, phi) {
+      const R = 1;
+      const x = R * Math.sin(phi) * Math.cos(theta);
+      const y = R * Math.sin(phi) * Math.sin(theta);
+      const z = R * Math.cos(phi);
+      point.position.set(x, y, z);
+
+      // Stereographic projection (unchanged)
+      const [u, v] = [x / (R - z), y / (R - z)];
+      projection.position.set(u, v, 0);
+    }
+
+    // Raycasting (unchanged)
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    let isDragging = false;
+
+    renderer.domElement.addEventListener('mousedown', (event) => {
+      if (!isMoveMode) return;
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObject(sphere);
+      if (intersects.length > 0) {
+        isDragging = true;
+        updatePointFromIntersect(intersects[0]);
+      }
+    });
+
+    renderer.domElement.addEventListener('mousemove', (event) => {
+      if (!isMoveMode || !isDragging) return;
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObject(sphere);
+      if (intersects.length > 0) {
+        updatePointFromIntersect(intersects[0]);
+      }
+    });
+
+    renderer.domElement.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    function updatePointFromIntersect(intersect) {
+      const R = 1;
+      const pos = intersect.point.normalize().multiplyScalar(R);
+      point.position.copy(pos);
+      const [u, v] = [pos.x / (R - pos.z), pos.y / (R - pos.z)];
+      projection.position.set(u, v, 0);
+    }
+
+    // Animation loop (unchanged)
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+      if (!isMoveMode) controls.update();
+    }
+    animate();
+  </script>
+</body>
+</html>
