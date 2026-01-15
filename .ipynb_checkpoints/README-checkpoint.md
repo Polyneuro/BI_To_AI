@@ -33,3 +33,8 @@ You will find the followinbg files in order
 **13_Appendix.ipynb**
 
 Start with the **01_Intro.ipynb** and work your way through in numerical order.
+
+This repository is associated with the scientific article:
+**Developing a Mathematical Model of the brain and psychosocial function to facilitate machine learning simulation, prediction and personalised psychiatry** 
+
+Athula Polonowita $^{(1,2)}$, Tim Spleman $^{(1)}$ Pubudu N. Pathirana $^{(3)}$ (January 2026)
