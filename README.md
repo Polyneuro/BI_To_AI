@@ -32,6 +32,10 @@ You will find the followinbg files in order
   
 **13_Appendix.ipynb**
 
+**14A_AppendixB-1.ipynb**
+
+**14B_AppendixB-2.ipynb**
+  
 Start with the **01_Intro.ipynb** and work your way through in numerical order.
 
 This repository is associated with the scientific article:
